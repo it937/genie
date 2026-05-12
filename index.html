@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GENIE LIVE MARKET TICKER</title>
+
+<style>
+body {
+    margin: 0;
+    background: black;
+    overflow: hidden;
+    font-family: Arial;
+}
+
+.ticker {
+    position: absolute;
+    white-space: nowrap;
+    color: #b026ff;
+    font-size: 65px;
+    font-weight: bold;
+    top: 30%;
+    animation: scroll 18s linear infinite;
+}
+
+@keyframes scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+}
+
+.label {
+    color: white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="ticker" id="ticker">Loading market data...</div>
+
+<script>
+
+const refresh = 5000;
+
+// ---------- PRICES ----------
+async function getPrices() {
+    try {
+
+        // Gold (XAUUSD proxy)
+        let goldRes = await fetch("https://api.metals.live/v1/spot/gold");
+        let goldData = await goldRes.json();
+        let xau = goldData[0].price;
+
+        // FX rates
+        let fxRes = await fetch("https://open.er-api.com/v6/latest/USD");
+        let fx = await fxRes.json();
+
+        // BTC
+        let btcRes = await fetch("https://api.coindesk.com/v1/bpi/currentprice/BTC.json");
+        let btcData = await btcRes.json();
+        let btc = btcData.bpi.USD.rate;
+
+        // Oil (WTI proxy API)
+        let oilRes = await fetch("https://financialmodelingprep.com/api/v3/quote/CLUSD?apikey=demo");
+        let oilData = await oilRes.json();
+        let oil = oilData[0]?.price || "N/A";
+
+        return {
+            xau: xau,
+            gold: xau,
+            oil: oil,
+            nasdaq: "N/A", // fallback explained below
+            btc: btc
+        };
+
+    } catch (e) {
+        return null;
+    }
+}
+
+// ---------- UPDATE ----------
+async function update() {
+
+    let p = await getPrices();
+
+    if (!p) return;
+
+    document.getElementById("ticker").innerHTML =
+        "🟣 GENIE FX LIVE | " +
+        "XAUUSD: " + p.xau.toFixed(2) + " | " +
+        "GOLD: " + p.gold.toFixed(2) + " | " +
+        "OIL: " + p.oil + " | " +
+        "NASDAQ: " + p.nasdaq + " | " +
+        "BTCUSD: " + p.btc + " | " +
+        "GENIE LTD • FAST • LOW SPREAD • LIVE MARKET";
+}
+
+update();
+setInterval(update, refresh);
+
+</script>
+
+</body>
+</html>

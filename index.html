@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1280,height=80">
+<title>LED Forex Ticker</title>
+
+<style>
+body{
+    margin:0;
+    background:black;
+    overflow:hidden;
+    font-family:Arial, sans-serif;
+}
+
+.ticker{
+    width:100%;
+    height:80px;
+    line-height:80px;
+    white-space:nowrap;
+    overflow:hidden;
+    box-sizing:border-box;
+    background:#000;
+    color:#00ff66;
+    font-size:42px;
+    font-weight:bold;
+}
+
+.ticker span{
+    display:inline-block;
+    padding-left:100%;
+    animation:scroll 25s linear infinite;
+}
+
+@keyframes scroll{
+    0%{
+        transform:translateX(0);
+    }
+    100%{
+        transform:translateX(-100%);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="ticker">
+<span id="prices">
+LOADING MARKET DATA...
+</span>
+</div>
+
+<script>
+async function loadPrices(){
+
+    try{
+
+        const symbols = [
+            "EURUSD",
+            "GBPUSD",
+            "USDJPY",
+            "XAUUSD",
+            "BTCUSD"
+        ];
+
+        let text = "";
+
+        for(let s of symbols){
+
+            let url = "https://api.allorigins.win/raw?url=https://financialmodelingprep.com/api/v3/quote-short/" + s + "?apikey=demo";
+
+            let res = await fetch(url);
+            let data = await res.json();
+
+            if(data && data[0]){
+                text += s + ": " + data[0].price + "   |   ";
+            }
+        }
+
+        document.getElementById("prices").innerHTML = text;
+
+    }catch(e){
+        document.getElementById("prices").innerHTML =
+        "EURUSD 1.08 | GBPUSD 1.25 | GOLD 2350 | BTCUSD 64000";
+    }
+}
+
+loadPrices();
+
+setInterval(loadPrices, 10000);
+</script>
+
+</body>
+</html>
